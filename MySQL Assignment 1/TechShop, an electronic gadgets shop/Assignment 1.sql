@@ -25,7 +25,7 @@ CREATE TABLE Orders (
     CustomerID INT NOT NULL,
     OrderDate DATE NOT NULL,
     TotalAmount DECIMAL(10,2) NOT NULL,
-    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID) ON DELETE CASCADE
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
 );
 
 CREATE TABLE OrderDetails (
@@ -33,8 +33,8 @@ CREATE TABLE OrderDetails (
     OrderID INT NOT NULL,
     ProductID INT NOT NULL,
     Quantity INT NOT NULL CHECK (Quantity > 0),
-    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON DELETE CASCADE,
-    FOREIGN KEY (ProductID) REFERENCES Products(ProductID) ON DELETE CASCADE
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ,
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID) 
 );
 
 
@@ -43,7 +43,7 @@ CREATE TABLE Inventory (
     ProductID INT NOT NULL,
     QuantityInStock INT NOT NULL CHECK (QuantityInStock >= 0),
     LastStockUpdate DATE NOT NULL,
-    FOREIGN KEY (ProductID) REFERENCES Products(ProductID) ON DELETE CASCADE
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID) 
 );
 
 
