@@ -1,262 +1,257 @@
 package dao;
 
-import java.sql.*;
-import java.util.*;
-
 import entity.*;
-import exception.*;
+import exception.UserNotFoundException;
+import exception.OrderNotFoundException;
 import util.DBConnUtil;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OrderProcessor implements IOrderManagementRepository {
 
+    private final String dbProps = "src/db.properties";
+
     @Override
     public void createUser(User user) {
-        try (Connection conn = DBConnUtil.getConnection("db.properties")) {
-            String query = "INSERT INTO User (userId, username, password, role) VALUES (?, ?, ?, ?)";
-            PreparedStatement ps = conn.prepareStatement(query);
-            ps.setInt(1, user.getUserId());
-            ps.setString(2, user.getUsername());
-            ps.setString(3, user.getPassword());
-            ps.setString(4, user.getRole());
-            ps.executeUpdate();
-            System.out.println("User created: " + user.getUsername());
+        String query = "INSERT INTO User (username, password, role) VALUES (?, ?, ?)";
+
+        try (Connection conn = DBConnUtil.getConnection(dbProps);
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getPassword());
+            ps.setString(3, user.getRole());
+
+            int rows = ps.executeUpdate();
+            System.out.println(rows > 0 ? "User created!" : "Failed to create user.");
+
         } catch (SQLException e) {
-            System.out.println("Error creating user: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     @Override
     public void createProduct(User user, Product product) throws UserNotFoundException {
-        if (!userExists(user)) {
-            throw new UserNotFoundException("User not found: " + user.getUsername());
-        }
+        if (!isAdmin(user.getUsername())) throw new UserNotFoundException("User not authorized");
 
-        try (Connection conn = DBConnUtil.getConnection("db.properties")) {
-            String productQuery = "INSERT INTO Product (productName, description, price, quantityInStock, type) VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement ps = conn.prepareStatement(productQuery, Statement.RETURN_GENERATED_KEYS);
+        String baseQuery = "INSERT INTO Product (productName, description, price, quantityInStock, type) VALUES (?, ?, ?, ?, ?)";
+        String typeQuery = product instanceof Electronics
+                ? "INSERT INTO Electronics (productId, brand, warrantyPeriod) VALUES (?, ?, ?)"
+                : "INSERT INTO Clothing (productId, size, color) VALUES (?, ?, ?)";
+
+        try (Connection conn = DBConnUtil.getConnection(dbProps);
+             PreparedStatement ps = conn.prepareStatement(baseQuery, Statement.RETURN_GENERATED_KEYS)) {
+
             ps.setString(1, product.getProductName());
             ps.setString(2, product.getDescription());
             ps.setDouble(3, product.getPrice());
             ps.setInt(4, product.getQuantityInStock());
             ps.setString(5, product.getType());
-            ps.executeUpdate();
 
-            ResultSet rs = ps.getGeneratedKeys();
-            int productId = 0;
-            if (rs.next()) {
-                productId = rs.getInt(1);
+            int rows = ps.executeUpdate();
+
+            if (rows > 0) {
+                ResultSet rs = ps.getGeneratedKeys();
+                if (rs.next()) {
+                    int productId = rs.getInt(1);
+
+                    PreparedStatement typeStmt = conn.prepareStatement(typeQuery);
+                    typeStmt.setInt(1, productId);
+
+                    if (product instanceof Electronics) {
+                        Electronics e = (Electronics) product;
+                        typeStmt.setString(2, e.getBrand());
+                        typeStmt.setInt(3, e.getWarrantyPeriod());
+                    } else {
+                        Clothing c = (Clothing) product;
+                        typeStmt.setString(2, c.getSize());
+                        typeStmt.setString(3, c.getColor());
+                    }
+
+                    typeStmt.executeUpdate();
+                    System.out.println("Product added with ID: " + productId);
+                }
             }
 
-            if (product instanceof Electronics) {
-                Electronics e = (Electronics) product;
-                String electronicsQuery = "INSERT INTO Electronics (productId, brand, warrantyPeriod) VALUES (?, ?, ?)";
-                PreparedStatement eps = conn.prepareStatement(electronicsQuery);
-                eps.setInt(1, productId);
-                eps.setString(2, e.getBrand());
-                eps.setInt(3, e.getWarrantyPeriod());
-                eps.executeUpdate();
-            } else if (product instanceof Clothing) {
-                Clothing c = (Clothing) product;
-                String clothingQuery = "INSERT INTO Clothing (productId, size, color) VALUES (?, ?, ?)";
-                PreparedStatement cps = conn.prepareStatement(clothingQuery);
-                cps.setInt(1, productId);
-                cps.setString(2, c.getSize());
-                cps.setString(3, c.getColor());
-                cps.executeUpdate();
-            }
-
-            System.out.println("Product created: " + product.getProductName());
         } catch (SQLException e) {
-            System.out.println("Error creating product: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     @Override
     public void createOrder(User user, List<Product> products) throws UserNotFoundException {
-        if (!userExists(user)) {
-            throw new UserNotFoundException("User not found: " + user.getUsername());
-        }
+        Integer userId = getUserId(user.getUsername());
+        if (userId == null) throw new UserNotFoundException("User does not exist");
 
-        try (Connection conn = DBConnUtil.getConnection("db.properties")) {
+        try (Connection conn = DBConnUtil.getConnection(dbProps)) {
             conn.setAutoCommit(false);
 
-            String orderQuery = "INSERT INTO Orders (userId) VALUES (?)";
-            PreparedStatement orderStmt = conn.prepareStatement(orderQuery, Statement.RETURN_GENERATED_KEYS);
-            orderStmt.setInt(1, user.getUserId());
+            String insertOrder = "INSERT INTO Orders (userId) VALUES (?)";
+            PreparedStatement orderStmt = conn.prepareStatement(insertOrder, Statement.RETURN_GENERATED_KEYS);
+            orderStmt.setInt(1, userId);
             orderStmt.executeUpdate();
 
             ResultSet rs = orderStmt.getGeneratedKeys();
-            int orderId = 0;
             if (rs.next()) {
-                orderId = rs.getInt(1);
-            }
+                int orderId = rs.getInt(1);
 
-            String itemQuery = "INSERT INTO Order_Details (orderId, productId, quantity) VALUES (?, ?, ?)";
-            PreparedStatement itemStmt = conn.prepareStatement(itemQuery);
-            for (Product p : products) {
-                itemStmt.setInt(1, orderId);
-                itemStmt.setInt(2, p.getProductId());
-                itemStmt.setInt(3, 1); // Assuming quantity = 1
-                itemStmt.addBatch();
-            }
+                String orderDetails = "INSERT INTO Order_Details (orderId, productId, quantity) VALUES (?, ?, ?)";
+                PreparedStatement detailStmt = conn.prepareStatement(orderDetails);
 
-            itemStmt.executeBatch();
-            conn.commit();
-            System.out.println("Order created successfully for user: " + user.getUsername());
+                for (Product p : products) {
+                    detailStmt.setInt(1, orderId);
+                    detailStmt.setInt(2, p.getProductId());
+                    detailStmt.setInt(3, 1); // default quantity = 1, can be dynamic
+                    detailStmt.addBatch();
+                }
+
+                detailStmt.executeBatch();
+                conn.commit();
+                System.out.println("Order placed successfully! Order ID: " + orderId);
+            }
 
         } catch (SQLException e) {
-            System.out.println("Error creating order: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     @Override
     public void cancelOrder(int userId, int orderId) throws UserNotFoundException, OrderNotFoundException {
-        if (!userExistsById(userId)) {
-            throw new UserNotFoundException("User not found: " + userId);
-        }
+        try (Connection conn = DBConnUtil.getConnection(dbProps)) {
+            // Check if user exists
+            if (!userExists(userId)) throw new UserNotFoundException("Invalid user.");
 
-        try (Connection conn = DBConnUtil.getConnection("db.properties")) {
-            String check = "SELECT orderId FROM Orders WHERE orderId = ? AND userId = ?";
-            PreparedStatement checkStmt = conn.prepareStatement(check);
-            checkStmt.setInt(1, orderId);
-            checkStmt.setInt(2, userId);
-            ResultSet rs = checkStmt.executeQuery();
-            if (!rs.next()) {
-                throw new OrderNotFoundException("Order not found: " + orderId);
-            }
+            // Check if order exists
+            String check = "SELECT * FROM Orders WHERE orderId = ? AND userId = ?";
+            PreparedStatement ps = conn.prepareStatement(check);
+            ps.setInt(1, orderId);
+            ps.setInt(2, userId);
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) throw new OrderNotFoundException("Order not found for user.");
 
-            PreparedStatement delItems = conn.prepareStatement("DELETE FROM Order_Details WHERE orderId = ?");
-            delItems.setInt(1, orderId);
-            delItems.executeUpdate();
+            // Cancel (delete)
+            String delete = "DELETE FROM Orders WHERE orderId = ?";
+            PreparedStatement delStmt = conn.prepareStatement(delete);
+            delStmt.setInt(1, orderId);
+            int rows = delStmt.executeUpdate();
 
-            PreparedStatement delOrder = conn.prepareStatement("DELETE FROM Orders WHERE orderId = ?");
-            delOrder.setInt(1, orderId);
-            delOrder.executeUpdate();
-
-            System.out.println("Order cancelled: " + orderId);
+            System.out.println(rows > 0 ? "Order canceled." : "Failed to cancel.");
 
         } catch (SQLException e) {
-            System.out.println("Error cancelling order: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     @Override
     public List<Product> getAllProducts() {
-        List<Product> products = new ArrayList<>();
+        List<Product> list = new ArrayList<>();
+        String query = "SELECT * FROM Product";
 
-        try (Connection conn = DBConnUtil.getConnection("db.properties")) {
-            String query = "SELECT * FROM Product";
-            PreparedStatement ps = conn.prepareStatement(query);
-            ResultSet rs = ps.executeQuery();
+        try (Connection conn = DBConnUtil.getConnection(dbProps);
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                int productId = rs.getInt("productId");
-                String type = rs.getString("type");
-                Product product = null;
-
-                if ("Electronics".equalsIgnoreCase(type)) {
-                    PreparedStatement eps = conn.prepareStatement("SELECT * FROM Electronics WHERE productId = ?");
-                    eps.setInt(1, productId);
-                    ResultSet ers = eps.executeQuery();
-                    if (ers.next()) {
-                        product = new Electronics(productId, rs.getString("productName"), rs.getString("description"),
-                                rs.getDouble("price"), rs.getInt("quantityInStock"), type,
-                                ers.getString("brand"), ers.getInt("warrantyPeriod"));
-                    }
-                } else if ("Clothing".equalsIgnoreCase(type)) {
-                    PreparedStatement cps = conn.prepareStatement("SELECT * FROM Clothing WHERE productId = ?");
-                    cps.setInt(1, productId);
-                    ResultSet crs = cps.executeQuery();
-                    if (crs.next()) {
-                        product = new Clothing(productId, rs.getString("productName"), rs.getString("description"),
-                                rs.getDouble("price"), rs.getInt("quantityInStock"), type,
-                                crs.getString("size"), crs.getString("color"));
-                    }
-                }
-
-                if (product != null) {
-                    products.add(product);
-                }
+                Product p = new Product();
+                p.setProductId(rs.getInt("productId"));
+                p.setProductName(rs.getString("productName"));
+                p.setDescription(rs.getString("description"));
+                p.setPrice(rs.getDouble("price"));
+                p.setQuantityInStock(rs.getInt("quantityInStock"));
+                p.setType(rs.getString("type"));
+                list.add(p);
             }
 
         } catch (SQLException e) {
-            System.out.println("Error retrieving products: " + e.getMessage());
+            e.printStackTrace();
         }
-
-        return products;
+        return list;
     }
 
     @Override
     public List<Product> getOrderByUser(User user) throws UserNotFoundException {
-        if (!userExists(user)) {
-            throw new UserNotFoundException("User not found: " + user.getUsername());
-        }
+        List<Product> list = new ArrayList<>();
+        Integer userId = getUserId(user.getUsername());
+        if (userId == null) throw new UserNotFoundException("User not found");
 
-        List<Product> orders = new ArrayList<>();
+        String query = """
+            SELECT p.productId, p.productName, p.description, p.price, p.quantityInStock, p.type
+            FROM Product p
+            JOIN Order_Details od ON p.productId = od.productId
+            JOIN Orders o ON od.orderId = o.orderId
+            WHERE o.userId = ?
+        """;
 
-        try (Connection conn = DBConnUtil.getConnection("db.properties")) {
-            String query = """
-                SELECT p.*
-                FROM Orders o
-                JOIN Order_Details od ON o.orderId = od.orderId
-                JOIN Product p ON od.productId = p.productId
-                WHERE o.userId = ?
-            """;
-            PreparedStatement ps = conn.prepareStatement(query);
-            ps.setInt(1, user.getUserId());
+        try (Connection conn = DBConnUtil.getConnection(dbProps);
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                String type = rs.getString("type");
-                Product p = null;
-                int productId = rs.getInt("productId");
-
-                if ("Electronics".equalsIgnoreCase(type)) {
-                    PreparedStatement eps = conn.prepareStatement("SELECT * FROM Electronics WHERE productId = ?");
-                    eps.setInt(1, productId);
-                    ResultSet ers = eps.executeQuery();
-                    if (ers.next()) {
-                        p = new Electronics(productId, rs.getString("productName"), rs.getString("description"),
-                                rs.getDouble("price"), rs.getInt("quantityInStock"), type,
-                                ers.getString("brand"), ers.getInt("warrantyPeriod"));
-                    }
-                } else if ("Clothing".equalsIgnoreCase(type)) {
-                    PreparedStatement cps = conn.prepareStatement("SELECT * FROM Clothing WHERE productId = ?");
-                    cps.setInt(1, productId);
-                    ResultSet crs = cps.executeQuery();
-                    if (crs.next()) {
-                        p = new Clothing(productId, rs.getString("productName"), rs.getString("description"),
-                                rs.getDouble("price"), rs.getInt("quantityInStock"), type,
-                                crs.getString("size"), crs.getString("color"));
-                    }
-                }
-
-                if (p != null) {
-                    orders.add(p);
-                }
+                Product p = new Product();
+                p.setProductId(rs.getInt("productId"));
+                p.setProductName(rs.getString("productName"));
+                p.setDescription(rs.getString("description"));
+                p.setPrice(rs.getDouble("price"));
+                p.setQuantityInStock(rs.getInt("quantityInStock"));
+                p.setType(rs.getString("type"));
+                list.add(p);
             }
 
         } catch (SQLException e) {
-            System.out.println("Error retrieving orders: " + e.getMessage());
+            e.printStackTrace();
         }
 
-        return orders;
+        return list;
     }
 
-    private boolean userExists(User user) {
-        return userExistsById(user.getUserId());
+    // Helper methods
+
+    private Integer getUserId(String username) {
+        String query = "SELECT userId FROM User WHERE username = ?";
+        try (Connection conn = DBConnUtil.getConnection(dbProps);
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt("userId");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    private boolean userExistsById(int userId) {
-        try (Connection conn = DBConnUtil.getConnection("db.properties")) {
-            String query = "SELECT * FROM User WHERE userId = ?";
-            PreparedStatement ps = conn.prepareStatement(query);
+    private boolean isAdmin(String username) {
+        String query = "SELECT role FROM User WHERE username = ?";
+        try (Connection conn = DBConnUtil.getConnection(dbProps);
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            return rs.next() && rs.getString("role").equalsIgnoreCase("Admin");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private boolean userExists(int userId) {
+        String query = "SELECT userId FROM User WHERE userId = ?";
+        try (Connection conn = DBConnUtil.getConnection(dbProps);
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
             return rs.next();
+
         } catch (SQLException e) {
-            System.out.println("Error checking user existence: " + e.getMessage());
-            return false;
+            e.printStackTrace();
         }
+        return false;
     }
 }
