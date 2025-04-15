@@ -2,17 +2,26 @@ package util;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Properties;
 
 public class DBConnUtil {
 
-    public static Connection getConnection(String propFileName) {
+    public static Connection getConnection(String propertyFile) {
         Connection conn = null;
         try {
-            String connectionString = DBPropertyUtil.getPropertyString(propFileName);
-            conn = DriverManager.getConnection(connectionString);
-            System.out.println("Connected to the database successfully!");
-        } catch (Exception e) {
-            System.out.println("Error connecting to the database: " + e.getMessage());
+            Properties props = DBPropertyUtil.getProperties(propertyFile);
+            String host = props.getProperty("host");
+            String port = props.getProperty("port");
+            String dbname = props.getProperty("dbname");
+            String username = props.getProperty("username");
+            String password = props.getProperty("password");
+
+            String url = "jdbc:mysql://" + host + ":" + port + "/" + dbname;
+
+            conn = DriverManager.getConnection(url, username, password);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return conn;
     }
