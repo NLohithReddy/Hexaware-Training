@@ -109,3 +109,44 @@ CREATE TABLE cancellations (
 );
 
 
+
+-- Srikanth Reddy booked 2 seats (1A, 1B) on IndiGo flight 6E123 from Hyderabad to Chennai and paid via UPI.
+-- Users
+INSERT INTO users (name, email, password, contact_number, address, role) VALUES
+('Srikanth Reddy', 'srikanth@example.com', 'pass123', '9876543210', 'Hyderabad', 'PASSENGER'),
+('Tejaswi N', 'tejaswi@example.com', 'pass123', '9876543211', 'Vijayawada', 'PASSENGER'),
+('Praveen Kumar', 'praveen@example.com', 'pass123', '9876543212', 'Chennai', 'FLIGHT_OWNER'),
+('Lohith Reddy', 'lohith.reddy@example.com', 'admin123', '9876543213', 'Bangalore', 'ADMIN');
+
+-- Flights
+INSERT INTO flights (flight_name, flight_number, baggage_checkin_kg, baggage_cabin_kg, total_seats, owner_id) VALUES
+('IndiGo', '6E123', 15, 7, 180, 3),
+('Air India', 'AI456', 25, 10, 150, 3),
+('Vistara', 'UK789', 20, 8, 170, 3);
+
+-- Routes
+INSERT INTO routes (flight_id, origin, destination, departure_time, arrival_time, fare) VALUES
+(1, 'Hyderabad', 'Chennai', '2025-05-12 08:00:00', '2025-05-12 09:30:00', 3500.00),
+(2, 'Vizag', 'Bangalore', '2025-05-13 11:00:00', '2025-05-13 13:00:00', 4000.00),
+(3, 'Tirupati', 'Hyderabad', '2025-05-14 06:00:00', '2025-05-14 07:00:00', 2800.00);
+
+-- Seats for Route 1
+INSERT INTO seats (route_id, seat_number, is_booked) VALUES
+(1, '1A', FALSE),
+(1, '1B', FALSE),
+(1, '1C', TRUE),
+(1, '2A', FALSE),
+(1, '2B', FALSE);
+
+-- Booking by Srikanth
+INSERT INTO bookings (user_id, route_id, total_amount, status) VALUES
+(1, 1, 7000.00, 'BOOKED');
+
+-- Booking Seats
+INSERT INTO booking_seats (booking_id, seat_id) VALUES
+(1, 1),  -- Seat 1A
+(1, 2);  -- Seat 1B
+
+-- Payment for Booking
+INSERT INTO payments (booking_id, payment_method, amount, payment_status) VALUES
+(1, 'UPI', 7000.00, 'SUCCESS');
