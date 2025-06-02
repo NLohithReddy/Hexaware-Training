@@ -1,0 +1,492 @@
+{
+	"info": {
+		"_postman_id": "c8bc6d26-2650-44e8-a446-2ac06675876a",
+		"name": "Tesing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45111380",
+		"_collection_link": "https://nlohithreddy.postman.co/workspace/N-Lohith-Reddy's-Workspace~20b3080c-ea08-4371-80dd-59e18d079827/collection/45111380-c8bc6d26-2650-44e8-a446-2ac06675876a?action=share&source=collection_link&creator=45111380"
+	},
+	"item": [
+		{
+			"name": "user update",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsb2hpdGgiLCJpYXQiOjE3NDg4MzE2MjgsImV4cCI6MTc0ODgzNTIyOH0.ZriaFUArPeI0uwxtIjilrZ4DPr0sGgnFJMnIUZ_sXL0",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"fullName\": \"N Lohith Reddy\",\r\n\"phone\": \"9876543210\",\r\n\"address\": \"Sangareddy, Telangana\",\r\n\"gender\": \"Male\",\r\n\"dateOfBirth\": \"2004-01-29\",\r\n\"country\": \"India\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/users/update",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "passenger registration",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"username\": \"venkat\",\r\n\"password\": \"test123\",\r\n\"email\": \"venkat@gmail.com\",\r\n\"role\": \"USER\",\r\n\"fullName\": \"N Venkat Reddy\",\r\n\"phone\": \"9876543456\",\r\n\"address\": \"Hyderabad\",\r\n\"gender\": \"Male\",\r\n\"dateOfBirth\": \"2004-05-29\",\r\n\"country\": \"India\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/auth/user/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"user",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "passenger login",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"username\": \"lohith\",\r\n\"password\": \"reddy\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/auth/user/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"user",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "passenger profile",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsb2hpdGgiLCJpYXQiOjE3NDg4NDMyMjUsImV4cCI6MTc0ODg0NjgyNX0.2bpckLva8iD3eCfpbq1cRftjli7iFKOPE-4kwfiRJV8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/users/me",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "passenger (booking)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsb2hpdGgiLCJpYXQiOjE3NDg4NDMyMjUsImV4cCI6MTc0ODg0NjgyNX0.2bpckLva8iD3eCfpbq1cRftjli7iFKOPE-4kwfiRJV8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"flightId\": 3,\r\n\"seats\": 3\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/bookings/book",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"bookings",
+						"book"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "passenger (own bookings)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsb2hpdGgiLCJpYXQiOjE3NDg4NDMyMjUsImV4cCI6MTc0ODg0NjgyNX0.2bpckLva8iD3eCfpbq1cRftjli7iFKOPE-4kwfiRJV8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/bookings/my",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"bookings",
+						"my"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "passenger (cancel booking)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsb2hpdGgiLCJpYXQiOjE3NDg4NDMyMjUsImV4cCI6MTc0ODg0NjgyNX0.2bpckLva8iD3eCfpbq1cRftjli7iFKOPE-4kwfiRJV8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/bookings/cancel/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"bookings",
+						"cancel",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "admin registration",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"username\": \"sreenivas\",\r\n\"password\": \"admin123\",\r\n\"email\": \"sreenivas1@gmail.com\",\r\n\"role\": \"ADMIN\",\r\n\"fullName\": \"N Sreenivas Reddy\",\r\n\"phone\": \"9876543210\",\r\n\"address\": \"Hyderabad\",\r\n\"gender\": \"Male\",\r\n\"dateOfBirth\": \"1978-05-01\",\r\n\"country\": \"India\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/auth/admin/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"admin",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "admin login",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"username\": \"admin\",\r\n\"password\": \"adminpass\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/auth/admin/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"admin",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "admin (view all flights)",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsb2hpdGhyZWRkeSIsImlhdCI6MTc0ODg0MTg2OCwiZXhwIjoxNzQ4ODQ1NDY4fQ.NBnLs78KLcrY-MbQ28I33qogE9Bc9OmSMXclFN2ISq8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"airlineName\": \"IndiGo\",\r\n\"flightNumber\": \"IG101\",\r\n\"source\": \"Hyderabad\",\r\n\"destination\": \"Delhi\",\r\n\"departureTime\": \"2025-06-10T09:00:00\",\r\n\"arrivalTime\": \"2025-06-10T10:15:00\",\r\n\"totalSeats\": 120,\r\n\"price\": 4500.0,\r\n\"status\": \"ON_TIME\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/flights/all",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"flights",
+						"all"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "admin (adding flights)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc0ODg0MzA4MiwiZXhwIjoxNzQ4ODQ2NjgyfQ.x33oqvIp1Nx9S8MeODP50qoB1GsYEepjC6DP3CExChg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"airlineName\": \"IndiGo\",\r\n\"flightNumber\": \"IG101\",\r\n\"source\": \"Hyderabad\",\r\n\"destination\": \"Delhi\",\r\n\"departureTime\": \"2025-06-10T09:00:00\",\r\n\"arrivalTime\": \"2025-06-10T10:15:00\",\r\n\"totalSeats\": 120,\r\n\"price\": 4500.0,\r\n\"status\": \"ON_TIME\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/flights/add",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"flights",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "admin (view all bookings)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzcmVlbml2YXMiLCJpYXQiOjE3NDg4NDI4MTgsImV4cCI6MTc0ODg0NjQxOH0.F_Scrxi0skFKZlFVKVuN6kGFrIFsuou7-GYUs9WA1PQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/bookings/all",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"bookings",
+						"all"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "admin (view all booking in a flight)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzcmVlbml2YXMiLCJpYXQiOjE3NDg4NDI4MTgsImV4cCI6MTc0ODg0NjQxOH0.F_Scrxi0skFKZlFVKVuN6kGFrIFsuou7-GYUs9WA1PQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/bookings/flight/3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"bookings",
+						"flight",
+						"3"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
